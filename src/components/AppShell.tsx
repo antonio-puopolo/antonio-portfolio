@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { CalendarCheck2, Columns3, Plus, LogOut } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/lib/auth';
+import { QuickAddProvider, useQuickAdd } from './QuickAddContext';
 
 const NAV = [
   { to: '/', label: 'Today', icon: CalendarCheck2, end: true },
@@ -9,7 +10,16 @@ const NAV = [
 ];
 
 export function AppShell() {
+  return (
+    <QuickAddProvider>
+      <Shell />
+    </QuickAddProvider>
+  );
+}
+
+function Shell() {
   const { session, signOut } = useAuth();
+  const quickAdd = useQuickAdd();
   const email = session?.user.email ?? '';
 
   return (
@@ -40,7 +50,7 @@ export function AppShell() {
         </nav>
 
         <div className="mt-auto pt-8 space-y-3">
-          <button type="button" className="btn-primary w-full">
+          <button type="button" onClick={quickAdd.open} className="btn-primary w-full">
             <Plus className="h-4 w-4" />
             New lead
           </button>
@@ -85,6 +95,7 @@ export function AppShell() {
           ))}
           <button
             type="button"
+            onClick={quickAdd.open}
             className="flex flex-col items-center gap-1 py-3 text-xs font-medium text-forest"
           >
             <Plus className="h-5 w-5" />

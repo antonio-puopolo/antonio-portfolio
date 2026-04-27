@@ -49,7 +49,7 @@ export type CallOutcome =
   | 'wrong_number'
   | 'do_not_call';
 
-export interface PropertyRow {
+export type PropertyRow = {
   id: string;
   user_id: string;
   address: string;
@@ -72,11 +72,11 @@ export interface PropertyRow {
   notes: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-export type PropertyInsert = Partial<
-  Pick<PropertyRow, 'user_id' | 'next_follow_up_at' | 'created_at' | 'updated_at'>
-> & {
+export type PropertyInsert = {
+  id?: string;
+  user_id?: string;
   address: string;
   suburb?: string | null;
   postcode?: string | null;
@@ -88,20 +88,20 @@ export type PropertyInsert = Partial<
   est_price_high?: number | null;
   source?: LeadSource | null;
   stage?: Stage;
+  next_follow_up_at?: string | null;
   snoozed_until?: string | null;
   lost_reason?: LostReason | null;
   lost_note?: string | null;
   listed_at?: string | null;
   sold_at?: string | null;
   notes?: string | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
-export type PropertyUpdate = Partial<PropertyInsert> & {
-  stage?: Stage;
-  next_follow_up_at?: string | null;
-};
+export type PropertyUpdate = Partial<PropertyInsert>;
 
-export interface ContactRow {
+export type ContactRow = {
   id: string;
   user_id: string;
   property_id: string;
@@ -111,20 +111,23 @@ export interface ContactRow {
   email: string | null;
   is_primary: boolean;
   created_at: string;
-}
+};
 
 export type ContactInsert = {
+  id?: string;
+  user_id?: string;
   property_id: string;
   name: string;
   role?: ContactRole;
   phone?: string | null;
   email?: string | null;
   is_primary?: boolean;
+  created_at?: string;
 };
 
 export type ContactUpdate = Partial<ContactInsert>;
 
-export interface ActivityRow {
+export type ActivityRow = {
   id: string;
   user_id: string;
   property_id: string;
@@ -135,14 +138,19 @@ export interface ActivityRow {
   from_stage: Stage | null;
   to_stage: Stage | null;
   created_at: string;
-}
+};
 
 export type ActivityInsert = {
+  id?: string;
+  user_id?: string;
   property_id: string;
   kind: ActivityKind;
   outcome?: CallOutcome | null;
   body?: string | null;
   transcript?: string | null;
+  from_stage?: Stage | null;
+  to_stage?: Stage | null;
+  created_at?: string;
 };
 
 export type Database = {
@@ -152,20 +160,37 @@ export type Database = {
         Row: PropertyRow;
         Insert: PropertyInsert;
         Update: PropertyUpdate;
+        Relationships: [];
       };
       contacts: {
         Row: ContactRow;
         Insert: ContactInsert;
         Update: ContactUpdate;
+        Relationships: [
+          {
+            foreignKeyName: 'contacts_property_id_fkey';
+            columns: ['property_id'];
+            referencedRelation: 'properties';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       activities: {
         Row: ActivityRow;
         Insert: ActivityInsert;
         Update: Partial<ActivityInsert>;
+        Relationships: [
+          {
+            foreignKeyName: 'activities_property_id_fkey';
+            columns: ['property_id'];
+            referencedRelation: 'properties';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Views: { [key: string]: never };
+    Functions: { [key: string]: never };
     Enums: {
       stage: Stage;
       lead_source: LeadSource;
@@ -174,7 +199,7 @@ export type Database = {
       activity_kind: ActivityKind;
       call_outcome: CallOutcome;
     };
-    CompositeTypes: Record<string, never>;
+    CompositeTypes: { [key: string]: never };
   };
 };
 
