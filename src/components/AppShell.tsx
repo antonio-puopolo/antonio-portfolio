@@ -3,6 +3,7 @@ import { CalendarCheck2, Columns3, Plus, LogOut } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/lib/auth';
 import { QuickAddProvider, useQuickAdd } from './QuickAddContext';
+import { GlobalSearch } from './GlobalSearch';
 
 const NAV = [
   { to: '/', label: 'Today', icon: CalendarCheck2, end: true },
@@ -28,6 +29,10 @@ function Shell() {
         <div className="mb-10">
           <p className="font-serif text-2xl tracking-tight text-ink">Lead Tracker</p>
           <p className="text-xs text-ink-muted mt-1">Camp Hill · Brisbane</p>
+        </div>
+
+        <div className="mb-3">
+          <GlobalSearch />
         </div>
 
         <nav className="flex flex-col gap-1">

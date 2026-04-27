@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, Pencil } from 'lucide-react';
 import { useProperty, useUpdateProperty } from '@/lib/queries';
 import { StagePicker } from '@/components/StagePicker';
 import { FollowUpControl } from '@/components/FollowUpControl';
@@ -7,12 +8,15 @@ import { ContactsList } from '@/components/ContactsList';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
 import { VoiceNoteButton } from '@/components/VoiceNoteButton';
 import { NotesEditor } from '@/components/NotesEditor';
-import type { Stage } from '@/types/db';
+import { LogCallButton } from '@/components/LogCallButton';
+import { LostReasonSheet } from '@/components/LostReasonSheet';
+import { LOST_REASONS, type Stage } from '@/types/db';
 
 export function PropertyDetailPage() {
   const { id } = useParams();
   const { data, isLoading, error } = useProperty(id);
   const update = useUpdateProperty();
+  const [lostSheet, setLostSheet] = useState<'new' | 'edit' | null>(null);
 
   if (isLoading) {
     return <div className="p-12 text-sm text-ink-muted">Loading…</div>;
@@ -27,12 +31,24 @@ export function PropertyDetailPage() {
 
   function setStage(stage: Stage) {
     if (!data) return;
-    void update.mutate({ id: data.id, patch: { stage } });
+    if (stage === 'lost') {
+      setLostSheet('new');
+      return;
+    }
+    void update.mutate({
+      id: data.id,
+      patch: stage === 'sold'
+        ? { stage }
+        : { stage, lost_reason: null, lost_note: null },
+    });
   }
   function setFollowUp(next: string | null) {
     if (!data) return;
     void update.mutate({ id: data.id, patch: { next_follow_up_at: next } });
   }
+
+  const lostReasonLabel =
+    data.lost_reason && LOST_REASONS.find((r) => r.id === data.lost_reason)?.label;
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 md:py-10">
@@ -53,7 +69,20 @@ export function PropertyDetailPage() {
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <StagePicker value={data.stage} onChange={setStage} />
           <FollowUpControl value={data.next_follow_up_at} onChange={setFollowUp} />
+          <LogCallButton propertyId={data.id} />
         </div>
+
+        {data.stage === 'lost' && (
+          <button
+            type="button"
+            onClick={() => setLostSheet('edit')}
+            className="mt-3 inline-flex items-center gap-2 text-xs text-ink-muted hover:text-ink"
+          >
+            <Pencil className="h-3 w-3" />
+            Lost: {lostReasonLabel ?? 'no reason set'}
+            {data.lost_note && ` — ${data.lost_note}`}
+          </button>
+        )}
       </header>
 
       <Section title="Contacts">
@@ -71,6 +100,17 @@ export function PropertyDetailPage() {
       <Section title="Activity">
         <ActivityTimeline activities={data.activities} />
       </Section>
+
+      {lostSheet && (
+        <LostReasonSheet
+          open
+          propertyId={data.id}
+          onClose={() => setLostSheet(null)}
+          initialReason={data.lost_reason}
+          initialNote={data.lost_note}
+          withStageChange={lostSheet === 'new'}
+        />
+      )}
     </div>
   );
 }

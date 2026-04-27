@@ -6,6 +6,7 @@ import type { PropertyWithContacts } from '@/lib/queries';
 import { primaryContact } from '@/lib/queries';
 import { StageBadge } from './StageBadge';
 import { LogCallButton } from './LogCallButton';
+import { SnoozeButton } from './SnoozeButton';
 
 type Props = {
   property: PropertyWithContacts;
@@ -59,18 +60,21 @@ export function PropertyCard({ property, showStage = true, compact = false }: Pr
         <p className="text-xs text-ink-muted">
           {followUp ? format(followUp, 'EEE d MMM') : 'No follow-up'}
         </p>
-        {owner?.phone && (
-          <div className="flex items-center gap-1.5">
-            <a
-              href={`tel:${owner.phone}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-bone-deep px-3 py-1.5 text-xs font-medium text-ink hover:bg-ink/5"
-            >
-              <Phone className="h-3.5 w-3.5" />
-              Call
-            </a>
-            <LogCallButton propertyId={property.id} />
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          <SnoozeButton propertyId={property.id} />
+          {owner?.phone && (
+            <>
+              <a
+                href={`tel:${owner.phone}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-bone-deep px-3 py-1.5 text-xs font-medium text-ink hover:bg-ink/5"
+              >
+                <Phone className="h-3.5 w-3.5" />
+                Call
+              </a>
+              <LogCallButton propertyId={property.id} />
+            </>
+          )}
+        </div>
       </div>
     </article>
   );
